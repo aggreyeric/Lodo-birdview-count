@@ -1,8 +1,4 @@
 
-
-
-
-
 import cv2
 import numpy as np
 def img2bw(img,th):
