@@ -1,36 +1,37 @@
+# import opencv library
 import cv2
-import numpy as np
+# thresholding function that helps keep only the top circles
 import imgbw
-image = cv2.imread("/home/eric/Desktop/White-Six-Sided-Dice.jpg")
-output = image.copy()
+# import numpy
+import numpy as np
+# Reads the Image
+image = cv2.imread('/home/eric/Desktop/untitled1/imgss/b.jpg')
+# image copy for display
+imagec = image.copy()
+#converts to gray
 gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
-blur = cv2.GaussianBlur(gray,(5,5),0)
-#thresh = cv2.adaptiveThreshold(blur,255,1,1,11,2)
-thresh = imgbw.img2bw(image,200 )
-kernel = np.ones((5,5),np.uint8)
-erosion = cv2.erode(thresh,kernel,iterations = 6)
-
-# detect circles in the image
-#circles = cv2.HoughCircles(thresh, cv2.HOUGH_GRADIENT, 1.2, 100)
-circles = cv2.HoughCircles(thresh,1,20,param1=50,param2=30,minRadius=0,maxRadius=0)
-# ensure at least some circles were found
-if circles is not None:
-    # convert the (x, y) coordinates and radius of the circles to integers
-    circles = np.round(circles[0, :]).astype("int")
-
-    # loop over the (x, y) coordinates and radius of the circles
-for (x, y, r) in circles:
-
-    # draw the circle in the output image, then draw a rectangle
-    # corresponding to the center of the circle
-    cv2.circle(output, (x, y), r, (0, 255, 0), 4)
-    cv2.rectangle(output, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
-
-# show the output image
-cv2.imshow("output", np.hstack([image, output]))
-
-cv2.namedWindow("Image")
-cv2.imshow("Image",thresh)
-cv2.namedWindow("Imag")
-cv2.imshow("Imag",erosion)
+# thresholding the Image to get rid of diagonal circles
+thresh = imgbw.img2bw(gray,200)
+# detecting circles
+circles = cv2.HoughCircles(thresh,cv2.HOUGH_GRADIENT,1,20,param1=50,param2=10,minRadius=10,maxRadius=30)
+# removing negative values and rounding up numbers
+circles = np.uint16(np.around(circles))
+#setting a the circle count
+count = 0
+for i in circles[0,:]:
+    # draw the outer circle on the original image
+    cv2.circle(image,(i[0],i[1]),i[2],(0,255,0),2)
+    # draw the center of the circle
+    cv2.circle(image,(i[0],i[1]),2,(0,0,255),3)
+    count = count + 1
+# casting of interger to String.
+t = str(count)
+# Concatenation of the converted interger and some custom text
+ftext = t + " Dice detected"
+cv2.putText(image,ftext,(10,30), cv2.FONT_HERSHEY_SIMPLEX, 1,(0,0,255),2,cv2.LINE_AA)
+cv2.putText(thresh,"Preprocessed to keep only bird view circles",(10,30), cv2.FONT_HERSHEY_SIMPLEX, 0.7,(255,255,255),2,cv2.LINE_AA)
+cv2.imshow('detected circles',image)
+cv2.imshow('preprocessed Image',thresh)
+cv2.imshow('Original Image',imagec)
 cv2.waitKey(0)
+cv2.destroyAllWindows()
